@@ -1,5 +1,6 @@
 package com.example.fitness.myapplication.ui.labs
 
+// Import các thành phần hỗ trợ Animation và Bố cục giao diện của Jetpack Compose
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -44,21 +45,45 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * Phòng thí nghiệm trực quan hoá:
- * - Câu #042: Fragment _binding = null tại onDestroyView và vòng đời viewLifecycleOwner
- * - Câu #045: Bug 2 Fragment đè lên nhau khi xoay màn hình (quên check savedInstanceState == null)
- * - Câu #046 & #047: Fragment Result API & Shared ViewModel
- * - Câu #050: Predictive Back Animation (Android 14-16)
+ * Phòng thí nghiệm trực quan hoá các bẫy phỏng vấn cốt lõi về Fragment và Navigation:
+ * - Câu #042: Tại sao phải gán `_binding = null` tại onDestroyView() và sự tách biệt vòng đời giữa:
+ *   + Fragment Instance (sống từ onAttach -> onDetach, được giữ trong BackStack).
+ *   + View của Fragment (chết tại onDestroyView, chỉ sống từ onCreateView -> onDestroyView).
+ *   + viewLifecycleOwner: Phải luôn truyền viewLifecycleOwner khi observe LiveData/Flow trong Fragment,
+ *     nếu truyền `this` sẽ gây observe lặp nhiều lần (Duplicate Observer bug).
+ * - Câu #045: Bug 2 Fragment đè lên nhau khi xoay màn hình (Configuration Change):
+ *   + Xảy ra khi lập trình viên quên check `if (savedInstanceState == null)` trước khi thực hiện FragmentTransaction.add().
+ * - Câu #046 & #047: Cơ chế giao tiếp giữa 2 Fragment:
+ *   + Fragment Result API (setFragmentResult & setFragmentResultListener): Chuẩn mới, thay thế interface cũ.
+ *   + Shared ViewModel (activityViewModels() / navGraphViewModels()): Dùng khi chia sẻ state phức tạp.
+ * - Câu #050: Predictive Back Animation (Android 14 - Android 16):
+ *   + Hệ thống cử chỉ vuốt lùi có thể xem trước màn hình cha thu nhỏ dần trước khi nhả tay xác nhận thoát.
  */
 @Composable
 fun FragmentNavLab() {
+    // Trạng thái màn hình hiện tại: đang ở Fragment B (Chi tiết) hay Fragment A (Danh sách)
     var isDetailOpen by remember { mutableStateOf(false) }
+
+    // Trạng thái bật/tắt cơ chế gán _binding = null trong onDestroyView() (Bẫy Câu #042)
+    // true: Đúng chuẩn, giải phóng ViewBinding khi Fragment vào BackStack để tránh Memory Leak
+    // false: Quên set null, giữ tham chiếu View đã bị hủy -> Gây rò rỉ bộ nhớ nghiêm trọng
     var nullifyBindingOnDestroy by remember { mutableStateOf(true) }
+
+    // Trạng thái bật/tắt kiểm tra savedInstanceState == null khi xoay màn hình (Bẫy Câu #045)
+    // true: Kiểm tra đúng, FragmentManager tự khôi phục, không add thêm instance mới
+    // false: Quên kiểm tra, tạo mới và add chồng thêm một Fragment nữa lên giao diện
     var checkSavedStateOnRotate by remember { mutableStateOf(true) }
+
+    // Đếm số lượng Fragment instance đang bị chồng đè lên nhau trong container (Mô phỏng Bug #045)
     var stackedFragmentCount by remember { mutableIntStateOf(1) }
+
+    // Tiến trình vuốt Predictive Back Gesture từ mép màn hình (giá trị từ 0.0f đến 1.0f)
     var predictiveBackProgress by remember { mutableFloatStateOf(0f) }
+
+    // Biến lưu trữ dữ liệu chia sẻ giữa 2 Fragment (Mô phỏng Shared ViewModel hoặc Fragment Result API)
     var sharedStateValue by remember { mutableStateOf("Thiết bị #01 (Bình thường)") }
 
+    // Danh sách nhật ký sự kiện vòng đời hiển thị trên màn hình Console LIFO
     val logs = remember {
         mutableStateListOf(
             "👉 Thử mở màn hình Chi tiết (Fragment B) rồi bấm Back hoặc mô phỏng xoay màn hình.",
@@ -66,11 +91,13 @@ fun FragmentNavLab() {
         )
     }
 
+    // Hàm tiện ích thêm log lên đầu danh sách và giới hạn tối đa 40 dòng
     fun addLog(msg: String) {
         logs.add(0, msg)
         if (logs.size > 40) logs.removeAt(logs.lastIndex)
     }
 
+    // Cột bố cục tổng thể có thể cuộn dọc
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -79,6 +106,7 @@ fun FragmentNavLab() {
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        // Tiêu đề phòng thí nghiệm
         Text(
             text = "🧩 Lab #042, #045 & #050: Fragment & Predictive Back",
             fontSize = 17.sp,
@@ -86,13 +114,18 @@ fun FragmentNavLab() {
             color = Color(0xFF38BDF8)
         )
 
-        // BẢNG ĐIỀU KHIỂN RÀNG BUỘC
+        // =========================================================================
+        // BẢNG ĐIỀU KHIỂN CÁC RÀNG BUỘC VÒNG ĐỜI VÀ BẪY PHỎNG VẤN
+        // =========================================================================
         Card(
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
             shape = RoundedCornerShape(10.dp)
         ) {
-            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                // 1. SWITCH NULLIFY BINDING
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // 1. SWITCH NULLIFY VIEW BINDING TẠI ONDESTROYVIEW
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -106,7 +139,10 @@ fun FragmentNavLab() {
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = if (nullifyBindingOnDestroy) "✅ Đúng: Giải phóng View khi vào BackStack (chống Leak)" else "❌ Sai: Giữ tham chiếu View chết gây rò rỉ bộ nhớ!",
+                            text = if (nullifyBindingOnDestroy)
+                                "✅ Đúng: Giải phóng View khi vào BackStack (chống Leak)"
+                            else
+                                "❌ Sai: Giữ tham chiếu View chết gây rò rỉ bộ nhớ!",
                             color = if (nullifyBindingOnDestroy) Color(0xFF34D399) else Color(0xFFF87171),
                             fontSize = 11.sp
                         )
@@ -118,7 +154,7 @@ fun FragmentNavLab() {
                     )
                 }
 
-                // 2. SWITCH CHECK SAVED INSTANCE STATE KHI XOAY
+                // 2. SWITCH CHECK SAVEDINSTANCESTATE KHI XOAY MÀN HÌNH (CÂU #045)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -132,7 +168,10 @@ fun FragmentNavLab() {
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = if (checkSavedStateOnRotate) "✅ Đúng: Không add đè Fragment mới sau xoay" else "❌ Sai: Add thêm Fragment mới -> Bị đè 2 lớp!",
+                            text = if (checkSavedStateOnRotate)
+                                "✅ Đúng: Không add đè Fragment mới sau xoay"
+                            else
+                                "❌ Sai: Add thêm Fragment mới -> Bị đè 2 lớp!",
                             color = if (checkSavedStateOnRotate) Color(0xFF34D399) else Color(0xFFF87171),
                             fontSize = 11.sp
                         )
@@ -144,12 +183,14 @@ fun FragmentNavLab() {
                     )
                 }
 
-                // 3. NÚT MÔ PHỎNG XOAY MÀN HÌNH
+                // 3. NÚT BẤM MÔ PHỎNG XOAY MÀN HÌNH (CONFIGURATION CHANGE)
                 Button(
                     onClick = {
                         if (checkSavedStateOnRotate) {
+                            // Đúng chuẩn: savedInstanceState != null nên không gọi fragmentTransaction.add() thêm lần nữa
                             addLog("🔄 [Xoay màn hình] savedInstanceState != null -> FragmentManager tự khôi phục, giữ nguyên 1 Fragment duy nhất.")
                         } else {
+                            // Mắc bẫy: Mỗi lần xoay màn hình lại add thêm 1 Fragment mới
                             stackedFragmentCount++
                             addLog("🚨 [BUG CÂU #045] Xoay màn hình: Không check null -> Add thêm Fragment! Hiện có $stackedFragmentCount Fragment chồng đè!")
                         }
@@ -163,12 +204,17 @@ fun FragmentNavLab() {
             }
         }
 
-        // MÔ PHỎNG PREDICTIVE BACK SLIDER (CÂU #050)
+        // =========================================================================
+        // THANH TRƯỢT MÔ PHỎNG PREDICTIVE BACK GESTURE (CÂU #050)
+        // =========================================================================
         Card(
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
             shape = RoundedCornerShape(10.dp)
         ) {
-            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
                 Text(
                     text = "🔙 Predictive Back Gesture (Android 14–16 - Câu #050):",
                     color = Color(0xFFFDE047),
@@ -180,6 +226,7 @@ fun FragmentNavLab() {
                     color = Color(0xFF94A3B8),
                     fontSize = 11.5.sp
                 )
+                // Slider mô phỏng việc người dùng vuốt từ cạnh màn hình vào trong
                 Slider(
                     value = predictiveBackProgress,
                     onValueChange = {
@@ -193,9 +240,12 @@ fun FragmentNavLab() {
             }
         }
 
-        // KHUNG CONTAINER HIỂN THỊ FRAGMENT
+        // =========================================================================
+        // KHUNG CONTAINER CHỨA VÀ HIỂN THỊ FRAGMENT (FRAGMENT CONTAINER VIEW)
+        // =========================================================================
+        // Hiệu ứng thu nhỏ kích thước của màn hình theo cử chỉ Predictive Back
         val containerScale by animateFloatAsState(
-            targetValue = 1f - (predictiveBackProgress * 0.15f),
+            targetValue = 1f - (predictiveBackProgress * 0.15f), // Thu nhỏ tối đa còn 85%
             label = "predictiveScale"
         )
         Box(
@@ -203,6 +253,7 @@ fun FragmentNavLab() {
                 .fillMaxWidth()
                 .height(180.dp)
                 .graphicsLayer {
+                    // Áp dụng tỉ lệ co giãn theo cử chỉ Back
                     scaleX = containerScale
                     scaleY = containerScale
                 }
@@ -212,7 +263,9 @@ fun FragmentNavLab() {
             contentAlignment = Alignment.Center
         ) {
             if (!isDetailOpen) {
-                // MÀN HÌNH FRAGMENT A (DANH SÁCH)
+                // =================================================================
+                // GIAO DIỆN FRAGMENT A (MÀN HÌNH DANH SÁCH)
+                // =================================================================
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -229,6 +282,7 @@ fun FragmentNavLab() {
                         fontSize = 12.sp,
                         fontFamily = FontFamily.Monospace
                     )
+                    // Cảnh báo trực quan nếu bị dính lỗi 2 Fragment chồng đè nhau
                     if (stackedFragmentCount > 1) {
                         Text(
                             text = "⚠️ Có $stackedFragmentCount instance đang chạy đè lên nhau (Bug #045)!",
@@ -237,6 +291,7 @@ fun FragmentNavLab() {
                             fontWeight = FontWeight.Bold
                         )
                     }
+                    // Nút chuyển trang: Gọi FragmentTransaction replace và addToBackStack
                     Button(
                         onClick = {
                             isDetailOpen = true
@@ -249,7 +304,9 @@ fun FragmentNavLab() {
                     }
                 }
             } else {
-                // MÀN HÌNH FRAGMENT B (CHI TIẾT)
+                // =================================================================
+                // GIAO DIỆN FRAGMENT B (MÀN HÌNH CHI TIẾT)
+                // =================================================================
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -261,6 +318,7 @@ fun FragmentNavLab() {
                         fontSize = 14.sp
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // Nút mô phỏng Fragment Result API truyền kết quả ngược về cho Fragment A
                         Button(
                             onClick = {
                                 sharedStateValue = "Đã đổi: Chế độ Tiết Kiệm Điện (Fragment Result API #046)"
@@ -272,13 +330,16 @@ fun FragmentNavLab() {
                             Text("Gửi Kết Quả Về A", fontSize = 11.sp)
                         }
 
+                        // Nút mô phỏng người dùng bấm Back để thoát Fragment B
                         Button(
                             onClick = {
                                 isDetailOpen = false
                                 predictiveBackProgress = 0f
                                 if (nullifyBindingOnDestroy) {
+                                    // Đúng chuẩn: View của B bị hủy hoàn toàn và giải phóng bộ nhớ
                                     addLog("🧹 [onDestroyView] _binding = null -> Thu hồi toàn bộ View cây con sạch sẽ.")
                                 } else {
+                                    // Bẫy leak: Tham chiếu binding còn giữ cây View trong bộ nhớ heap
                                     addLog("🚨 [LEAK BẪY #042] _binding KHÔNG null -> Giữ tham chiếu View dù View đã chết!")
                                 }
                             },
@@ -292,7 +353,9 @@ fun FragmentNavLab() {
             }
         }
 
-        // LOG NHẬT KÝ THAO TÁC
+        // =========================================================================
+        // BẢNG CONSOLE NHẬT KÝ THAO TÁC VÒNG ĐỜI
+        // =========================================================================
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -319,6 +382,7 @@ fun FragmentNavLab() {
                 }
             }
 
+            // Danh sách log hiển thị theo màu sắc phân loại
             LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 itemsIndexed(logs) { index, line ->
                     Text(
@@ -329,7 +393,7 @@ fun FragmentNavLab() {
                             line.contains("setFragmentResult") -> Color(0xFF34D399)
                             else -> Color(0xFFCBD5E1)
                         },
-                        fontSize = 11.sp,
+                        fontSize = 11.5.sp,
                         fontFamily = FontFamily.Monospace
                     )
                 }
