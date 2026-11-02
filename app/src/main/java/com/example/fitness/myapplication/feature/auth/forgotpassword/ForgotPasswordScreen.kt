@@ -10,9 +10,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fitness.myapplication.core.designsystem.component.EdupiaTopBar
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
+import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 
 @Composable
 fun ForgotPasswordScreen(
@@ -52,5 +54,17 @@ fun ForgotPasswordContent(
             // Skeleton màn hình Quên Mật Khẩu (chưa code nội dung)
             Text(text = "Forgot Password Screen (Skeleton)")
         }
+    }
+}
+
+@Preview(showBackground = true, name = "ForgotPassword Screen")
+@Composable
+fun ForgotPasswordScreenPreview() {
+    EdupiaTheme {
+        ForgotPasswordContent(
+            state = ForgotPasswordState(),
+            onIntent = {},
+            onBack = {}
+        )
     }
 }

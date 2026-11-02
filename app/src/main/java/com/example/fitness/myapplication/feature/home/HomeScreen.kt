@@ -14,11 +14,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fitness.myapplication.core.appstate.LocalCommonStore
 import com.example.fitness.myapplication.core.designsystem.component.EdupiaButton
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
+import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel) {
@@ -79,6 +82,44 @@ private fun HomeContent(
  */
 @Composable
 private fun AppVersionLabel() {
-    val common by LocalCommonStore.current.state.collectAsStateWithLifecycle()
-    Text("Phiên bản ${common.currentVersion}", style = MaterialTheme.typography.bodySmall)
+    if (LocalInspectionMode.current) {
+        Text("Phiên bản 1.0.0", style = MaterialTheme.typography.bodySmall)
+    } else {
+        val common by LocalCommonStore.current.state.collectAsStateWithLifecycle()
+        Text("Phiên bản ${common.currentVersion}", style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Preview(showBackground = true, name = "Home Screen")
+@Composable
+fun HomeScreenPreview() {
+    EdupiaTheme {
+        HomeContent(
+            state = HomeState(
+                profileName = "Nguyễn Văn A",
+                phone = "0987654321",
+                profileCount = 2,
+                activeLicenseCount = 1,
+                isLoadingLicenses = false
+            ),
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Home Screen - Loading Licenses")
+@Composable
+fun HomeScreenLoadingPreview() {
+    EdupiaTheme {
+        HomeContent(
+            state = HomeState(
+                profileName = "Nguyễn Văn A",
+                phone = "0987654321",
+                profileCount = 2,
+                activeLicenseCount = 0,
+                isLoadingLicenses = true
+            ),
+            onIntent = {}
+        )
+    }
 }

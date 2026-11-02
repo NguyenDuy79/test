@@ -21,9 +21,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaShapes
+import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTypography
 
 @Composable
@@ -115,5 +117,52 @@ fun EdupiaCard(
             .padding(16.dp)
     ) {
         content()
+    }
+}
+
+@Preview(showBackground = true, name = "EdupiaLoading")
+@Composable
+fun EdupiaLoadingPreview() {
+    EdupiaTheme {
+        Box(modifier = Modifier.size(300.dp)) {
+            EdupiaLoading(message = "Đang tải dữ liệu...")
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "EdupiaErrorView")
+@Composable
+fun EdupiaErrorViewPreview() {
+    EdupiaTheme {
+        Box(modifier = Modifier.size(300.dp)) {
+            EdupiaErrorView(
+                message = "Đã xảy ra lỗi kết nối. Vui lòng kiểm tra lại mạng.",
+                onRetry = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "EdupiaCard")
+@Composable
+fun EdupiaCardPreview() {
+    EdupiaTheme {
+        Box(modifier = Modifier.padding(16.dp)) {
+            EdupiaCard(modifier = Modifier.fillMaxWidth()) {
+                Column {
+                    Text(
+                        text = "Thẻ thông tin Edupia",
+                        style = EdupiaTypography.titleMedium,
+                        color = EdupiaColors.Neutral900
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Nội dung chi tiết bên trong EdupiaCard với bo góc và viền chuẩn thiết kế.",
+                        style = EdupiaTypography.bodyMedium,
+                        color = EdupiaColors.Neutral600
+                    )
+                }
+            }
+        }
     }
 }

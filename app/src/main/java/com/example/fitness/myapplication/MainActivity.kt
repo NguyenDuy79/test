@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
                                         commonStore = container.commonStore,
                                     )
                                 },
-                                onNavigateToLogin = { currentScreen = AppDestination.LOGIN },
+                                onNavigateToOnboarding = { currentScreen = AppDestination.ONBOARDING },
                                 onNavigateToHome = { currentScreen = AppDestination.HOME },
                             )
 

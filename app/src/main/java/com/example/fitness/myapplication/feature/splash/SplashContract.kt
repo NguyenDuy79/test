@@ -13,7 +13,6 @@ sealed interface SplashIntent : UiIntent {
 }
 
 sealed interface SplashEffect : UiEffect {
-    object NavigateToLogin : SplashEffect
     object NavigateToHome : SplashEffect
     object NavigateToOnboarding : SplashEffect
 }

@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitness.myapplication.R
@@ -47,6 +48,7 @@ import com.example.fitness.myapplication.core.designsystem.component.EdupiaButto
 import com.example.fitness.myapplication.core.designsystem.component.EdupiaTopBar
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaShapes
+import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTypography
 import kotlinx.coroutines.flow.collectLatest
 
@@ -277,5 +279,50 @@ fun SignUpContent(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "SignUp Screen")
+@Composable
+fun SignUpScreenPreview() {
+    EdupiaTheme {
+        SignUpContent(
+            state = SignUpState(),
+            onIntent = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "SignUp Screen - Filled")
+@Composable
+fun SignUpScreenFilledPreview() {
+    EdupiaTheme {
+        SignUpContent(
+            state = SignUpState(
+                phone = "0987654321",
+                fullName = "Nguyễn Văn A",
+                password = "mypassword123",
+                confirmPassword = "mypassword123"
+            ),
+            onIntent = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "SignUp Screen - Error")
+@Composable
+fun SignUpScreenErrorPreview() {
+    EdupiaTheme {
+        SignUpContent(
+            state = SignUpState(
+                phone = "0987654321",
+                fullName = "Nguyễn Văn A",
+                errorMessage = "Số điện thoại đã được đăng ký trước đó"
+            ),
+            onIntent = {},
+            onBack = {}
+        )
     }
 }

@@ -19,16 +19,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fitness.myapplication.R
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
+import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTypography
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SplashScreen(
     viewModel: SplashViewModel,
-    onNavigateToLogin: () -> Unit = {},
+    onNavigateToOnboarding: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -37,8 +39,7 @@ fun SplashScreen(
         viewModel.effect.collectLatest { effect ->
             when (effect) {
                 is SplashEffect.NavigateToHome -> onNavigateToHome()
-                is SplashEffect.NavigateToLogin,
-                is SplashEffect.NavigateToOnboarding -> onNavigateToLogin()
+                is SplashEffect.NavigateToOnboarding -> onNavigateToOnboarding()
             }
         }
     }
@@ -87,10 +88,20 @@ fun SplashContent(
             ) {
                 Text(
                     text = "Edupia AI • Tiếng Anh Chất Lượng Cao",
-                    style = EdupiaTypography.bodySmall,
+                    style = EdupiaTypography.bodyLarge,
                     color = EdupiaColors.Neutral500
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Splash Screen")
+@Composable
+fun SplashScreenPreview() {
+    EdupiaTheme {
+        SplashContent(
+            state = SplashState()
+        )
     }
 }

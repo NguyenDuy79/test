@@ -1,7 +1,9 @@
 package com.example.fitness.myapplication.core.designsystem.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -20,8 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
+import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTypography
 
 @Composable
@@ -70,5 +74,22 @@ fun EdupiaTopBar(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 60.dp)
         )
+    }
+}
+
+@Preview(showBackground = true, name = "EdupiaTopBar - Variants")
+@Composable
+fun EdupiaTopBarPreview() {
+    EdupiaTheme {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            EdupiaTopBar(
+                title = "Đăng Nhập",
+                onBackClick = {}
+            )
+            EdupiaTopBar(
+                title = "Trang Chủ",
+                onBackClick = null
+            )
+        }
     }
 }

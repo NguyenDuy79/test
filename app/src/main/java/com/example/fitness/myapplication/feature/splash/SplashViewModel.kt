@@ -46,7 +46,7 @@ class SplashViewModel(
         setState { copy(isLoading = false) }
         sendEffect(
             if (authStore.currentState.isAuthenticated) SplashEffect.NavigateToHome
-            else SplashEffect.NavigateToLogin
+            else SplashEffect.NavigateToOnboarding
         )
     }
 

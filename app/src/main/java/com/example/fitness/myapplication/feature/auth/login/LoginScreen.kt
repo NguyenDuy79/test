@@ -46,12 +46,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitness.myapplication.R
 import com.example.fitness.myapplication.core.designsystem.component.EdupiaButton
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaShapes
+import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTypography
 import kotlinx.coroutines.flow.collectLatest
 
@@ -343,4 +345,32 @@ private fun SocialLoginItem(
             contentScale = ContentScale.Fit
         )
     }
+}
+
+@Preview(showBackground = true, name = "Login Screen")
+@Composable
+fun LoginScreenPreview() {
+    EdupiaTheme {
+        LoginContent(state = LoginState()) { }
+    }
+}
+
+@Preview(showBackground = true, name = "Login Screen - Error")
+@Composable
+fun LoginScreenErrorPreview() {
+    EdupiaTheme {
+        LoginContent(
+            state = LoginState(
+                phone = "0987654321",
+                password = "wrongpassword",
+                errorMessage = "Số điện thoại hoặc mật khẩu không chính xác"
+            )
+        ) { }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ShowLoginScreen() {
+    LoginScreenPreview()
 }

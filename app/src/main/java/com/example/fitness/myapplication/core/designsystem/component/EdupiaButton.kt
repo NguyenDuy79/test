@@ -5,7 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,9 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaShapes
+import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTypography
 
 @Composable
@@ -74,6 +78,35 @@ fun EdupiaButton(
                 text = text,
                 style = EdupiaTypography.labelLarge,
                 color = if (enabled) EdupiaColors.White else EdupiaColors.Neutral600
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "EdupiaButton - All States")
+@Composable
+fun EdupiaButtonAllStatesPreview() {
+    EdupiaTheme {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            EdupiaButton(
+                text = "NÚT MẶC ĐỊNH",
+                onClick = {},
+                modifier = Modifier.fillMaxWidth()
+            )
+            EdupiaButton(
+                text = "NÚT ĐANG TẢI",
+                onClick = {},
+                isLoading = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            EdupiaButton(
+                text = "NÚT VÔ HIỆU HÓA",
+                onClick = {},
+                enabled = false,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }

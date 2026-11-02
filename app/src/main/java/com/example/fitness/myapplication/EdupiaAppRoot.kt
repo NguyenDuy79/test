@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,8 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.fitness.myapplication.core.appstate.AppStateProvider
@@ -26,6 +29,7 @@ import com.example.fitness.myapplication.core.appstate.auth.AuthStore
 import com.example.fitness.myapplication.core.appstate.common.CommonEffect
 import com.example.fitness.myapplication.core.appstate.common.CommonStore
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
+import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -110,5 +114,15 @@ private fun GlobalLoadingOverlay() {
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(color = EdupiaColors.Primary)
+    }
+}
+
+@Preview(showBackground = true, name = "GlobalLoadingOverlay")
+@Composable
+fun GlobalLoadingOverlayPreview() {
+    EdupiaTheme {
+        Box(modifier = Modifier.size(300.dp)) {
+            GlobalLoadingOverlay()
+        }
     }
 }
