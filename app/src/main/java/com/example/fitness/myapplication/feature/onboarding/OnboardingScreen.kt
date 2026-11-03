@@ -11,14 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,9 +26,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fitness.myapplication.core.designsystem.component.AutoScrollPagerWithText
+import com.example.fitness.myapplication.core.designsystem.component.CarouselOptions
+import com.example.fitness.myapplication.core.designsystem.component.CarouselSliderWithText
 import com.example.fitness.myapplication.core.designsystem.component.EdupiaButton
 import com.example.fitness.myapplication.core.designsystem.component.IndicatorEffect
+import com.example.fitness.myapplication.core.designsystem.component.rememberCarouselController
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaShapes
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
@@ -63,24 +63,15 @@ fun OnboardingContent(
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSignUp: () -> Unit = {},
 ) {
-    val pagerState = rememberPagerState(
-        initialPage = state.currentPage,
-        pageCount = { state.pages.size },
-    )
+    // Khởi tạo CarouselController điều khiển CarouselSlider chuẩn Flutter
+    val carouselController = rememberCarouselController()
 
-    // Đồng bộ Pager swipe với ViewModel State
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collectLatest { page ->
-            onIntent(OnboardingIntent.PageChanged(page))
-        }
-    }
-
-    // Lắng nghe Effect chuyển trang hoặc chuyển màn hình
+    // Lắng nghe Effect từ ViewModel để điều khiển cuộn trang hoặc chuyển màn hình
     LaunchedEffect(effectFlow) {
         effectFlow?.collectLatest { effect ->
             when (effect) {
                 is OnboardingEffect.ScrollToPage -> {
-                    pagerState.animateScrollToPage(effect.page)
+                    carouselController.animateToPage(effect.page)
                 }
                 is OnboardingEffect.NavigateToLogin -> {
                     onNavigateToLogin()
@@ -98,46 +89,48 @@ fun OnboardingContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(bottom = innerPadding.calculateBottomPadding()),
         ) {
-            // Top Bar: Nút "Bỏ qua" (Skip)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                contentAlignment = Alignment.CenterEnd,
-            ) {
-                if (!state.isLastPage) {
-                    Text(
-                        text = "Bỏ qua",
-                        style = EdupiaTypography.labelLarge,
-                        color = EdupiaColors.Neutral600,
-                        modifier = Modifier.clickable { onIntent(OnboardingIntent.Skip) },
-                    )
-                }
-            }
 
-            // Auto-Scrolling Pager + Smooth Indicator + Dynamic Animated Text
+
+
+            // CarouselSlider tích hợp Smooth Indicator & Text Animation trượt phía dưới
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 contentAlignment = Alignment.Center,
             ) {
-                AutoScrollPagerWithText(
+                CarouselSliderWithText(
                     items = state.pages,
-                    pagerState = pagerState,
-                    autoScrollDurationMs = 3500L,
+                    modifier = Modifier.fillMaxSize(),
+                    controller = carouselController,
+                    // Indicator + chữ giữ kích thước cố định, ảnh chiếm toàn bộ phần còn lại
+                    imageFillsRemainingSpace = true,
+                    bottomContentHeight = 120.dp,
+                    options = CarouselOptions(
+                        viewportFraction = 1f,
+                        autoPlay = true,                    // Tự động cuộn trang
+                        autoPlayInterval = 3500L,           // 3.5 giây đổi trang
+                        enableInfiniteScroll = true,        // Cuộn vô hạn vòng tròn
+                        initialPage = state.currentPage,
+                        onPageChanged = { index, _ ->
+                            onIntent(OnboardingIntent.PageChanged(index))
+                        },
+                    ),
                     indicatorEffect = IndicatorEffect.WORM,
-                    pagerContent = { item, _ ->
+                    dotWidth = 8.dp,
+                    dotHeight = 8.dp,
+                    indicatorTopSpacing = 16.dp,
+                    textTopSpacing = 16.dp,
+                    itemContent = { item, _, _ ->
                         Image(
                             painter = painterResource(id = item.imageRes),
                             contentDescription = item.title,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(220.dp)
+                                .fillMaxSize()
                                 .clip(EdupiaShapes.ShapeLarge),
-                            contentScale = ContentScale.Fit,
+                            contentScale = ContentScale.Crop,
                         )
                     },
                     bottomTextContent = { item, _ ->
@@ -175,7 +168,7 @@ fun OnboardingContent(
                     .padding(horizontal = 24.dp, vertical = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                if (state.isLastPage) {
+
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
@@ -196,17 +189,11 @@ fun OnboardingContent(
                             Text(
                                 text = "ĐĂNG KÝ TÀI KHOẢN MỚI",
                                 style = EdupiaTypography.labelLarge,
-                                color = EdupiaColors.Primary,
+                                color = EdupiaColors.Primary600,
                             )
                         }
                     }
-                } else {
-                    EdupiaButton(
-                        text = "TIẾP TỤC",
-                        onClick = { onIntent(OnboardingIntent.NextPage) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
+
             }
         }
     }

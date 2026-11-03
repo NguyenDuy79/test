@@ -1,11 +1,17 @@
 package com.example.fitness.myapplication.ui.theme
 
-import androidx.compose.ui.graphics.Color
+import com.example.fitness.myapplication.core.designsystem.theme.AppColors as CoreAppColors
+import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors as CoreEdupiaColors
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+/** Re-export [AppColors] cho package ui.theme */
+typealias AppColors = CoreAppColors
+typealias EdupiaColors = CoreEdupiaColors
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Các màu tiện ích nhanh
+val Primary = AppColors.primary500
+val Primary500 = AppColors.primary500
+val LegacyPrimaryOrange = AppColors.legacyPrimaryOrange
+val White = AppColors.white
+val Black = AppColors.black
+val SemanticError = AppColors.semanticRedError
+val Neutral900 = AppColors.neutral900

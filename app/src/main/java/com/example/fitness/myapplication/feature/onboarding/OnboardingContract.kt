@@ -18,22 +18,21 @@ data class OnboardingState(
         OnboardingPageItem(
             title = "Học Tiếng Anh Với AI",
             description = "Luyện giao tiếp phản xạ 1:1 cùng giáo viên AI Edupia mọi lúc mọi nơi.",
-            imageRes = R.drawable.image_login,
+            imageRes = R.drawable.onboarding_1,
         ),
         OnboardingPageItem(
             title = "Lộ Trình Chuẩn Quốc Tế",
             description = "Chương trình học bám sát khung tham chiếu Châu Âu CEFR và bộ GD&ĐT.",
-            imageRes = R.drawable.logo_splash,
+            imageRes = R.drawable.onboarding_2,
         ),
         OnboardingPageItem(
             title = "Học Mà Chơi - Chơi Mà Học",
             description = "Hệ thống bài giảng tương tác và trò chơi sinh động giúp bé say mê học tập.",
-            imageRes = R.drawable.bg_onboarding,
+            imageRes = R.drawable.onboarding_3,
         ),
     ),
 ) : UiState {
-    val isLastPage: Boolean get() = currentPage == pages.size - 1
-    val isFirstPage: Boolean get() = currentPage == 0
+
 }
 
 sealed interface OnboardingIntent : UiIntent {

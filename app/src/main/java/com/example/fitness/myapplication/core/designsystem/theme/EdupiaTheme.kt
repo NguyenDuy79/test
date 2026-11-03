@@ -2,6 +2,7 @@ package com.example.fitness.myapplication.core.designsystem.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -12,36 +13,58 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val LightColorScheme = lightColorScheme(
-    primary = EdupiaColors.Primary,
-    onPrimary = EdupiaColors.White,
-    primaryContainer = EdupiaColors.Primary100,
-    onPrimaryContainer = EdupiaColors.Primary800,
-    secondary = EdupiaColors.BrandingPink,
-    onSecondary = EdupiaColors.White,
-    tertiary = EdupiaColors.BrandingLightBlue,
-    background = EdupiaColors.BackgroundWhite,
-    onBackground = EdupiaColors.Neutral900,
-    surface = EdupiaColors.SurfaceCard,
-    onSurface = EdupiaColors.Neutral900,
-    error = EdupiaColors.SemanticError,
-    onError = EdupiaColors.White,
+/**
+ * Khớp 1-1 với Flutter:
+ * ```dart
+ * static const ColorScheme _colorScheme = ColorScheme(
+ *     brightness: Brightness.light,
+ *     primary: AppColors.primary500,
+ *     onPrimary: AppColors.white,
+ *     secondary: AppColors.brandingPink,
+ *     onSecondary: AppColors.white,
+ *     error: AppColors.semanticRedError,
+ *     onError: AppColors.white,
+ *     background: AppColors.white,
+ *     onBackground: AppColors.neutral900,
+ *     surface: AppColors.white,
+ *     onSurface: AppColors.neutral900,
+ * );
+ * ```
+ */
+val AppLightColorScheme: ColorScheme = lightColorScheme(
+    primary = AppColors.primary500,
+    onPrimary = AppColors.white,
+    primaryContainer = AppColors.primary500,
+    onPrimaryContainer = AppColors.white,
+    secondary = AppColors.brandingPink,
+    onSecondary = AppColors.white,
+    secondaryContainer = AppColors.brandingPink,
+    onSecondaryContainer = AppColors.white,
+    tertiary = AppColors.brandingPink,
+    onTertiary = AppColors.white,
+    background = AppColors.white,
+    onBackground = AppColors.neutral900,
+    surface = AppColors.white,
+    onSurface = AppColors.neutral900,
+    surfaceTint = AppColors.primary500,
+    error = AppColors.semanticRedError,
+    onError = AppColors.white,
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = EdupiaColors.Primary,
-    onPrimary = EdupiaColors.White,
-    primaryContainer = EdupiaColors.Primary700,
-    onPrimaryContainer = EdupiaColors.Primary100,
-    secondary = EdupiaColors.BrandingPink,
-    onSecondary = EdupiaColors.White,
-    tertiary = EdupiaColors.BrandingLightBlue,
-    background = EdupiaColors.Neutral900,
-    onBackground = EdupiaColors.White,
-    surface = EdupiaColors.Neutral800,
-    onSurface = EdupiaColors.White,
-    error = EdupiaColors.SemanticError,
-    onError = EdupiaColors.White,
+val AppDarkColorScheme: ColorScheme = darkColorScheme(
+    primary = AppColors.primary500,
+    onPrimary = AppColors.white,
+    primaryContainer = AppColors.primary700,
+    onPrimaryContainer = AppColors.primary100,
+    secondary = AppColors.brandingPink,
+    onSecondary = AppColors.white,
+    tertiary = AppColors.brandingPink,
+    background = AppColors.neutral900,
+    onBackground = AppColors.white,
+    surface = AppColors.neutral800,
+    onSurface = AppColors.white,
+    error = AppColors.semanticRedError,
+    onError = AppColors.white,
 )
 
 @Composable
@@ -49,27 +72,37 @@ fun EdupiaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val colorScheme = if (darkTheme) AppDarkColorScheme else AppLightColorScheme
     val view = LocalView.current
 
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as? Activity)?.window
             if (window != null) {
-                window.statusBarColor = EdupiaColors.White.toArgb()
+                window.statusBarColor = AppColors.white.toArgb()
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
             }
         }
     }
 
     CompositionLocalProvider(
-        LocalEdupiaColors provides EdupiaColors
+        LocalAppColors provides AppColors,
+        LocalEdupiaColors provides EdupiaColors,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = EdupiaTypography,
             shapes = EdupiaShapes.MaterialShapes,
-            content = content
+            content = content,
         )
     }
+}
+
+/** Alias cho [EdupiaTheme] */
+@Composable
+fun AppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit,
+) {
+    EdupiaTheme(darkTheme = darkTheme, content = content)
 }

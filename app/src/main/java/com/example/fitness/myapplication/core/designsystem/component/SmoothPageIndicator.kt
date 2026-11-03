@@ -36,25 +36,26 @@ import kotlin.math.abs
  * tương tự như thư viện `smooth_page_indicator` bên Flutter.
  */
 enum class IndicatorEffect {
-    EXPANDING, // Mở rộng chấm active thành dạng capsule
-    SCALE,     // Phóng to kích thước chấm active
-    WORM,      // Kéo dài liên tục theo khoảng cách vuốt ngón tay
-    SIMPLE,    // Đổi màu đơn giản
+    EXPANDING, // Mở rộng chấm active thành dạng viên thuốc (capsule / pill)
+    SCALE,     // Phóng to kích thước đường kính chấm active
+    WORM,      // Kéo dài chuyển động liên tục theo khoảng cách vuốt ngón tay
+    SIMPLE,    // Đổi màu sắc đơn giản không thay đổi hình dạng
 }
 
 /**
  * Reusable Smooth Page Indicator Component cho Jetpack Compose.
  *
- * @param pagerState PagerState của HorizontalPager
- * @param pageCount Số lượng trang
- * @param effect Kiểu hiệu ứng animation (EXPANDING, SCALE, WORM, SIMPLE)
- * @param activeColor Màu chấm active
- * @param inactiveColor Màu chấm inactive
- * @param dotWidth Chiều rộng chuẩn của chấm
- * @param dotHeight Chiều cao chuẩn của chấm
- * @param expandedDotWidth Chiều rộng tối đa khi mở rộng (cho kiểu EXPANDING/WORM)
- * @param spacing Khoảng cách giữa các chấm
- * @param onDotClick Action khi click vào từng chấm chỉ báo
+ * @param pagerState Trạng thái PagerState của HorizontalPager hoặc CarouselSlider
+ * @param modifier Modifier tùy chỉnh khoảng cách hoặc vị trí
+ * @param pageCount Số lượng trang thực tế (mặc định lấy từ pagerState.pageCount)
+ * @param effect Kiểu hiệu ứng chuyển động chấm chỉ báo (EXPANDING, SCALE, WORM, SIMPLE)
+ * @param activeColor Màu sắc đại diện cho trang đang được chọn (Active)
+ * @param inactiveColor Màu sắc cho các trang chưa chọn (Inactive)
+ * @param dotWidth Chiều rộng tiêu chuẩn cho mỗi chấm khi ở trạng thái Inactive
+ * @param dotHeight Chiều cao tiêu chuẩn cho mỗi chấm
+ * @param expandedDotWidth Chiều rộng tối đa khi chấm mở rộng (cho kiểu EXPANDING/WORM)
+ * @param spacing Khoảng cách giữa các chấm chỉ báo liền kề
+ * @param onDotClick Hành động khi người dùng nhấn trực tiếp vào từng chấm chỉ báo
  */
 @Composable
 fun SmoothPageIndicator(
@@ -70,55 +71,80 @@ fun SmoothPageIndicator(
     spacing: Dp = 8.dp,
     onDotClick: ((Int) -> Unit)? = null,
 ) {
-    if (pageCount <= 0) return
+    // Kiểm tra số lượng trang hợp lệ (Nếu cuộn vô hạn với Int.MAX_VALUE thì dùng tham số pageCount truyền vào)
+    val actualPageCount = if (pageCount == Int.MAX_VALUE || pageCount <= 0) {
+        pagerState.pageCount
+    } else {
+        pageCount
+    }
 
+    // Nếu không có trang nào hoặc số trang vô hạn chưa được xử lý thì thoát sớm
+    if (actualPageCount <= 0 || actualPageCount == Int.MAX_VALUE) return
+
+    // Tính toán chỉ số trang thực tế nằm trong dải [0 .. actualPageCount - 1]
+    val currentRealIndex = (pagerState.currentPage % actualPageCount + actualPageCount) % actualPageCount
+
+    // Dựng hàng ngang chứa danh sách các chấm chỉ báo trang
     Row(
         modifier = modifier.padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(spacing),
-        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing), // Đặt khoảng cách giữa các chấm
+        verticalAlignment = Alignment.CenterVertically,        // Căn giữa theo chiều dọc
     ) {
-        repeat(pageCount) { index ->
+        // Lặp vẽ từng chấm chỉ báo đại diện cho từng trang thực tế
+        repeat(actualPageCount) { index ->
+            // Tính toán khoảng cách lệch giữa trang hiện tại và chấm chỉ báo thứ `index`
             val pageOffset = (
-                (pagerState.currentPage - index) + pagerState.currentPageOffsetFraction
+                (currentRealIndex - index) + pagerState.currentPageOffsetFraction
             ).let { abs(it) }
 
-            val isSelected = index == pagerState.currentPage
+            // Xกำหนด chấm hiện tại có đang được chọn (Active) hay không
+            val isSelected = index == currentRealIndex
 
+            // Animation co giãn chiều rộng chấm chỉ báo mượt mà bằng animateDpAsState
             val width by animateDpAsState(
                 targetValue = when (effect) {
+                    // Kiểu EXPANDING: Chấm active sẽ mở rộng thành chiều rộng expandedDotWidth
                     IndicatorEffect.EXPANDING -> if (isSelected) expandedDotWidth else dotWidth
+                    // Kiểu WORM: Chiều rộng thay đổi liên tục theo tỉ lệ vuốt ngón tay (fraction)
                     IndicatorEffect.WORM -> {
                         val fraction = (1f - pageOffset.coerceIn(0f, 1f))
                         dotWidth + (expandedDotWidth - dotWidth) * fraction
                     }
+                    // Các kiểu khác giữ nguyên chiều rộng tiêu chuẩn dotWidth
                     else -> dotWidth
                 },
-                animationSpec = tween(durationMillis = 300),
+                animationSpec = tween(durationMillis = 300), // Thời gian chạy animation 300ms
                 label = "indicator_width",
             )
 
+            // Animation co giãn chiều cao chấm chỉ báo mượt mà
             val height by animateDpAsState(
                 targetValue = when (effect) {
+                    // Kiểu SCALE: Chấm active sẽ phóng to 1.5 lần chiều cao tiêu chuẩn
                     IndicatorEffect.SCALE -> if (isSelected) dotHeight * 1.5f else dotHeight
+                    // Các kiểu khác giữ nguyên chiều cao dotHeight
                     else -> dotHeight
                 },
                 animationSpec = tween(durationMillis = 300),
                 label = "indicator_height",
             )
 
+            // Animation chuyên đổi màu sắc chấm chỉ báo từ inactiveColor sang activeColor mượt mà
             val color by animateColorAsState(
                 targetValue = if (isSelected) activeColor else inactiveColor,
                 animationSpec = tween(durationMillis = 300),
                 label = "indicator_color",
             )
 
+            // Dựng hình dạng hình tròn / capsule cho từng chấm chỉ báo
             Box(
                 modifier = Modifier
-                    .height(height)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
+                    .height(height)           // Áp dụng chiều cao đã có animation
+                    .width(width)             // Áp dụng chiều rộng đã có animation
+                    .clip(CircleShape)        // Bo tròn các góc thành hình tròn/capsule
+                    .background(color)        // Đổ màu background đã animation
                     .then(
+                        // Nếu có truyền sự kiện click thì thêm hiệu ứng nhấn clickable
                         if (onDotClick != null) {
                             Modifier.clickable { onDotClick(index) }
                         } else {

@@ -22,10 +22,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitness.myapplication.R
 import com.example.fitness.myapplication.core.designsystem.component.EdupiaButton
+import com.example.fitness.myapplication.core.designsystem.component.EdupiaTextField
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaShapes
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
@@ -159,14 +157,11 @@ fun LoginContent(
             }
 
             // Trường nhập Số điện thoại
-            OutlinedTextField(
+            EdupiaTextField(
                 value = state.phone,
                 onValueChange = { onIntent(LoginIntent.PhoneChanged(it)) },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Số điện thoại hoặc Tài khoản") },
-                placeholder = { Text("Nhập số điện thoại đã đăng ký") },
-                singleLine = true,
-                shape = EdupiaShapes.ShapeMedium,
+                label = "Số điện thoại hoặc Tài khoản",
+                placeholder = "Nhập số điện thoại đã đăng ký",
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Phone,
                     imeAction = ImeAction.Next
@@ -174,24 +169,16 @@ fun LoginContent(
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 ),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = EdupiaColors.Primary,
-                    unfocusedBorderColor = EdupiaColors.Neutral300,
-                    focusedLabelColor = EdupiaColors.Primary,
-                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Trường nhập Mật khẩu
-            OutlinedTextField(
+            EdupiaTextField(
                 value = state.password,
                 onValueChange = { onIntent(LoginIntent.PasswordChanged(it)) },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Mật khẩu") },
-                placeholder = { Text("Nhập mật khẩu của bạn") },
-                singleLine = true,
-                shape = EdupiaShapes.ShapeMedium,
+                label = "Mật khẩu",
+                placeholder = "Nhập mật khẩu của bạn",
                 visualTransformation = if (state.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -211,11 +198,6 @@ fun LoginContent(
                         )
                     }
                 },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = EdupiaColors.Primary,
-                    unfocusedBorderColor = EdupiaColors.Neutral300,
-                    focusedLabelColor = EdupiaColors.Primary,
-                )
             )
 
             // Quên mật khẩu
