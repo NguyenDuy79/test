@@ -10,9 +10,11 @@ data class LoginState(
     val isPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val isPushLoginButton: Boolean = true,
+    val errorPhone: String? = null,
+    val errorPassword: String? = null,
 ) : UiState {
-    val canSubmit: Boolean
-        get() = phone.isNotBlank() && password.isNotBlank() && !isLoading
+
 }
 
 sealed interface LoginIntent : UiIntent {

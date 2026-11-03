@@ -62,13 +62,16 @@ fun EdupiaTextField(
     readOnly: Boolean = false,
     textStyle: TextStyle = EdupiaTypography.bodyLarge,
     label: String? = null,
+    labelStyle: TextStyle = EdupiaTypography.titleSmall,
     placeholder: String? = null,
+    placeholderStyle: TextStyle = textStyle,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     prefix: @Composable (() -> Unit)? = null,
     suffix: @Composable (() -> Unit)? = null,
     supportingText: String? = null,
-    isError: Boolean = false,
+    errorMessage: String? = null,
+    isError: Boolean = errorMessage != null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -83,8 +86,11 @@ fun EdupiaTextField(
     @Suppress("NAME_SHADOWING")
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
+    val effectiveIsError = isError || errorMessage != null
+    val displaySupportingText = errorMessage ?: supportingText
+
     val glowAlpha by animateFloatAsState(
-        targetValue = if (focused && enabled && !isError) 1f else 0f,
+        targetValue = if (focused && enabled && !effectiveIsError) 1f else 0f,
         label = "EdupiaTextFieldGlow",
     )
 
@@ -92,10 +98,10 @@ fun EdupiaTextField(
         if (label != null) {
             Text(
                 text = label,
-                style = EdupiaTypography.titleSmall,
+                style = labelStyle,
                 color = when {
                     !enabled -> colors.disabledLabelColor
-                    isError -> colors.errorLabelColor
+                    effectiveIsError -> colors.errorLabelColor
                     else -> colors.unfocusedLabelColor
                 },
             )
@@ -118,12 +124,12 @@ fun EdupiaTextField(
             enabled = enabled,
             readOnly = readOnly,
             textStyle = textStyle,
-            placeholder = placeholder?.let { { Text(it) } },
+            placeholder = placeholder?.let { { Text(text = it, style = placeholderStyle) } },
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
             prefix = prefix,
             suffix = suffix,
-            isError = isError,
+            isError = effectiveIsError,
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
@@ -135,14 +141,14 @@ fun EdupiaTextField(
             colors = colors,
         )
 
-        // Dòng mô tả / lỗi: căn lề như supportingText của M3 (start 16dp)
-        if (supportingText != null) {
+        // Dòng mô tả / thông báo lỗi
+        if (displaySupportingText != null) {
             Text(
-                text = supportingText,
+                text = displaySupportingText,
                 style = EdupiaTypography.bodySmall,
                 color = when {
                     !enabled -> colors.disabledSupportingTextColor
-                    isError -> colors.errorSupportingTextColor
+                    effectiveIsError -> colors.errorSupportingTextColor
                     else -> colors.unfocusedSupportingTextColor
                 },
                 modifier = Modifier.padding(start = 16.dp),

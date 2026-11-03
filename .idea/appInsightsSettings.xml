@@ -11,8 +11,13 @@
                   <option name="appId" value="com.edupia.hybrid.vn" />
                 </ConnectionSetting>
               </option>
+              <option name="failureTypes">
+                <list>
+                  <option value="ANR" />
+                </list>
+              </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
-              <option name="timeIntervalDays" value="SEVEN_DAYS" />
+              <option name="timeIntervalDays" value="ONE_DAY" />
               <option name="visibilityType" value="ALL" />
             </InsightsFilterSettings>
           </value>
