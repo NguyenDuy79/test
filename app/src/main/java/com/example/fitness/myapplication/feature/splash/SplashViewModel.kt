@@ -1,13 +1,11 @@
 package com.example.fitness.myapplication.feature.splash
 
-import androidx.lifecycle.viewModelScope
 import com.example.fitness.myapplication.core.appstate.auth.AuthIntent
 import com.example.fitness.myapplication.core.appstate.auth.AuthStore
 import com.example.fitness.myapplication.core.appstate.common.CommonIntent
 import com.example.fitness.myapplication.core.appstate.common.CommonStore
 import com.example.fitness.myapplication.core.base.BaseViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 /**
  * ViewModel màn Splash.
@@ -22,12 +20,12 @@ class SplashViewModel(
 ) {
 
     init {
-        viewModelScope.launch { bootstrap() }
+        onIntent(SplashIntent.CheckAuthStatus)
     }
 
-    override suspend fun handleIntent(intent: SplashIntent) {
+    override fun handleIntent(intent: SplashIntent) {
         when (intent) {
-            is SplashIntent.CheckAuthStatus -> bootstrap()
+            is SplashIntent.CheckAuthStatus -> launchDroppable(intent) { bootstrap() }
         }
     }
 

@@ -9,17 +9,13 @@ class ForgotPasswordViewModel : BaseViewModel<ForgotPasswordState, ForgotPasswor
     initialState = ForgotPasswordState()
 ) {
 
-    override suspend fun handleIntent(intent: ForgotPasswordIntent) {
+    override fun handleIntent(intent: ForgotPasswordIntent) {
         when (intent) {
-            is ForgotPasswordIntent.PhoneChanged -> {
-                setState { copy(phone = intent.phone) }
-            }
+            is ForgotPasswordIntent.PhoneChanged -> setState { copy(phone = intent.phone) }
             is ForgotPasswordIntent.SubmitForgotPassword -> {
                 // TODO: Logic gửi yêu cầu OTP quên mật khẩu (để đấy)
             }
-            is ForgotPasswordIntent.NavigateBack -> {
-                sendEffect(ForgotPasswordEffect.NavigateBack)
-            }
+            is ForgotPasswordIntent.NavigateBack -> sendEffect(ForgotPasswordEffect.NavigateBack)
         }
     }
 }

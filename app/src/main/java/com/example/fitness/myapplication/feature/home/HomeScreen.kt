@@ -1,5 +1,6 @@
 package com.example.fitness.myapplication.feature.home
 
+import com.example.fitness.myapplication.core.base.CollectEffect
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,16 +28,14 @@ fun HomeScreen(viewModel: HomeViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
-            when (effect) {
-                is HomeEffect.ShowToast ->
-                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
-            }
+    CollectEffect(viewModel.effect) { effect ->
+        when (effect) {
+            is HomeEffect.ShowToast ->
+                Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
         }
     }
 
-    HomeContent(state = state, onIntent = viewModel::sendIntent)
+    HomeContent(state = state, onIntent = viewModel::onIntent)
 }
 
 @Composable

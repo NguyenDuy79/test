@@ -1,5 +1,7 @@
 package com.example.fitness.myapplication.feature.splash
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.fitness.myapplication.core.base.CollectEffect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,8 +15,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +25,6 @@ import com.example.fitness.myapplication.R
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTypography
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SplashScreen(
@@ -33,14 +32,12 @@ fun SplashScreen(
     onNavigateToOnboarding: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.effect.collectLatest { effect ->
-            when (effect) {
-                is SplashEffect.NavigateToHome -> onNavigateToHome()
-                is SplashEffect.NavigateToOnboarding -> onNavigateToOnboarding()
-            }
+    CollectEffect(viewModel.effect) { effect ->
+        when (effect) {
+            is SplashEffect.NavigateToHome -> onNavigateToHome()
+            is SplashEffect.NavigateToOnboarding -> onNavigateToOnboarding()
         }
     }
 

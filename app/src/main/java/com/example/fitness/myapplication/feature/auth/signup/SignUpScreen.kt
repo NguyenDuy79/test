@@ -1,5 +1,7 @@
 package com.example.fitness.myapplication.feature.auth.signup
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.fitness.myapplication.core.base.CollectEffect
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,8 +25,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,7 +50,6 @@ import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaShapes
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTypography
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignUpScreen(
@@ -58,24 +57,22 @@ fun SignUpScreen(
     onNavigateToLogin: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.effect.collectLatest { effect ->
-            when (effect) {
-                is SignUpEffect.NavigateToLogin -> onNavigateToLogin()
-                is SignUpEffect.NavigateToHome -> onNavigateToHome()
-                is SignUpEffect.ShowToast -> {
-                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
-                }
+    CollectEffect(viewModel.effect) { effect ->
+        when (effect) {
+            is SignUpEffect.NavigateToLogin -> onNavigateToLogin()
+            is SignUpEffect.NavigateToHome -> onNavigateToHome()
+            is SignUpEffect.ShowToast -> {
+                Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     SignUpContent(
         state = state,
-        onIntent = viewModel::sendIntent,
+        onIntent = viewModel::onIntent,
         onBack = onNavigateToLogin
     )
 }

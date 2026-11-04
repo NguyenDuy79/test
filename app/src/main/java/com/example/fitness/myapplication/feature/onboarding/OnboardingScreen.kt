@@ -1,5 +1,6 @@
 package com.example.fitness.myapplication.feature.onboarding
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,7 +16,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,11 +44,11 @@ fun OnboardingScreen(
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSignUp: () -> Unit = {},
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     OnboardingContent(
         state = state,
-        onIntent = viewModel::sendIntent,
+        onIntent = viewModel::onIntent,
         effectFlow = viewModel.effect,
         onNavigateToLogin = onNavigateToLogin,
         onNavigateToSignUp = onNavigateToSignUp,

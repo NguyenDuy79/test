@@ -41,14 +41,17 @@ class HomeViewModel(
         }
     }
 
-    override suspend fun handleIntent(intent: HomeIntent) {
+    override fun handleIntent(intent: HomeIntent) {
         when (intent) {
-            is HomeIntent.Refresh -> commonStore.withGlobalLoading {
-                authStore.dispatch(AuthIntent.LoadUser).join()
-                authStore.dispatch(AuthIntent.LoadLicenses).join()
+            // Đang refresh thì bỏ qua các lần kéo-làm-mới tiếp theo.
+            is HomeIntent.Refresh -> launchDroppable(intent) {
+                commonStore.withGlobalLoading {
+                    authStore.dispatch(AuthIntent.LoadUser).join()
+                    authStore.dispatch(AuthIntent.LoadLicenses).join()
+                }
             }
 
-            is HomeIntent.SignOut -> {
+            is HomeIntent.SignOut -> launchDroppable(intent) {
                 commonStore.withGlobalLoading { authStore.dispatch(AuthIntent.SignOut).join() }
                 // Không tự điều hướng: root nhận AuthEffect.SignedOut và đưa về Login.
                 sendEffect(HomeEffect.ShowToast("Đã đăng xuất"))

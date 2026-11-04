@@ -1,5 +1,7 @@
 package com.example.fitness.myapplication.feature.auth.login
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.fitness.myapplication.core.base.CollectEffect
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,8 +31,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +58,6 @@ import com.example.fitness.myapplication.core.designsystem.theme.EdupiaColors
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaShapes
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTheme
 import com.example.fitness.myapplication.core.designsystem.theme.EdupiaTypography
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun LoginScreen(
@@ -67,24 +66,22 @@ fun LoginScreen(
     onNavigateToSignUp: () -> Unit = {},
     onNavigateToForgotPassword: () -> Unit = {},
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.effect.collectLatest { effect ->
-            when (effect) {
-                is LoginEffect.NavigateToHome -> onNavigateToHome()
-                is LoginEffect.NavigateToSignUp -> onNavigateToSignUp()
-                is LoginEffect.NavigateToForgotPassword -> onNavigateToForgotPassword()
-                is LoginEffect.ShowToast -> {
-                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
-                }
+    CollectEffect(viewModel.effect) { effect ->
+        when (effect) {
+            is LoginEffect.NavigateToHome -> onNavigateToHome()
+            is LoginEffect.NavigateToSignUp -> onNavigateToSignUp()
+            is LoginEffect.NavigateToForgotPassword -> onNavigateToForgotPassword()
+            is LoginEffect.ShowToast -> {
+                Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     LoginContent(
-        state = state, onIntent = viewModel::sendIntent
+        state = state, onIntent = viewModel::onIntent
     )
 }
 

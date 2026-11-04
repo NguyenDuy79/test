@@ -6,11 +6,9 @@ class OnboardingViewModel : BaseViewModel<OnboardingState, OnboardingIntent, Onb
     initialState = OnboardingState(),
 ) {
 
-    override suspend fun handleIntent(intent: OnboardingIntent) {
+    override fun handleIntent(intent: OnboardingIntent) {
         when (intent) {
-            is OnboardingIntent.PageChanged -> {
-                setState { copy(currentPage = intent.page) }
-            }
+            is OnboardingIntent.PageChanged -> setState { copy(currentPage = intent.page) }
             is OnboardingIntent.NextPage -> {
                 val nextPage = currentState.currentPage + 1
                 if (nextPage < currentState.pages.size) {
@@ -20,15 +18,9 @@ class OnboardingViewModel : BaseViewModel<OnboardingState, OnboardingIntent, Onb
                     sendEffect(OnboardingEffect.NavigateToLogin)
                 }
             }
-            is OnboardingIntent.Skip -> {
-                sendEffect(OnboardingEffect.NavigateToLogin)
-            }
-            is OnboardingIntent.NavigateToLogin -> {
-                sendEffect(OnboardingEffect.NavigateToLogin)
-            }
-            is OnboardingIntent.NavigateToSignUp -> {
-                sendEffect(OnboardingEffect.NavigateToSignUp)
-            }
+            is OnboardingIntent.Skip -> sendEffect(OnboardingEffect.NavigateToLogin)
+            is OnboardingIntent.NavigateToLogin -> sendEffect(OnboardingEffect.NavigateToLogin)
+            is OnboardingIntent.NavigateToSignUp -> sendEffect(OnboardingEffect.NavigateToSignUp)
         }
     }
 }
