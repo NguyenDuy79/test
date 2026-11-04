@@ -351,7 +351,7 @@ fun LoginScreenErrorPreview() {
             state = LoginState(
                 phone = "0987654321",
                 password = "wrongpassword",
-                errorMessage = "Số điện thoại hoặc mật khẩu không chính xác"
+
             )
         ) { }
     }

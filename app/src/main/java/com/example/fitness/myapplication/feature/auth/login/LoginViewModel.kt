@@ -16,31 +16,25 @@ class LoginViewModel(
     override suspend fun handleIntent(intent: LoginIntent) {
         when (intent) {
             is LoginIntent.PhoneChanged -> {
-                setState { copy(phone = intent.phone, errorMessage = null) }
+                onPhoneChange(currentState.isPushLoginButton, intent.phone)
             }
+
             is LoginIntent.PasswordChanged -> {
-                setState { copy(password = intent.password, errorMessage = null) }
+                onPasswordChange(currentState.isPushLoginButton, intent.password)
             }
+
             is LoginIntent.TogglePasswordVisibility -> {
                 setState { copy(isPasswordVisible = !isPasswordVisible) }
             }
+
             is LoginIntent.SubmitLogin -> {
-                val currentPhone = currentState.phone.trim()
-                val currentPassword = currentState.password.trim()
+                validatePassword(currentState.password)
+                validatePhone(currentState.phone)
+                if(currentState.errorPhone != null || currentState.errorPassword != null) return
 
-                if (currentPhone.isEmpty()) {
-                    setState { copy(errorMessage = "Vui lòng nhập số điện thoại") }
-                    return
-                }
+                setState { copy(isLoading = true,) }
 
-                if (currentPassword.isEmpty()) {
-                    setState { copy(errorMessage = "Vui lòng nhập mật khẩu") }
-                    return
-                }
-
-                setState { copy(isLoading = true, errorMessage = null) }
-
-                val result = authRepository.login(currentPhone, currentPassword)
+                val result = authRepository.login(currentState.phone, currentState.password)
 
                 result.fold(
                     onSuccess = { response ->
@@ -56,24 +50,85 @@ class LoginViewModel(
                         sendEffect(LoginEffect.NavigateToHome)
                     },
                     onFailure = { exception ->
-                        val message = exception.message.ifEmpty { "Đăng nhập không thành công. Vui lòng thử lại!" }
-                        setState { copy(isLoading = false, errorMessage = message) }
+                        val message =
+                            exception.message.ifEmpty { "Đăng nhập không thành công. Vui lòng thử lại!" }
+                        setState { copy(isLoading = false,) }
                         sendEffect(LoginEffect.ShowToast(message))
                     }
                 )
             }
+
             is LoginIntent.SocialLogin -> {
                 sendEffect(LoginEffect.ShowToast("Đang phát triển đăng nhập qua ${intent.provider}"))
             }
+
             is LoginIntent.NavigateToSignUp -> {
                 sendEffect(LoginEffect.NavigateToSignUp)
             }
+
             is LoginIntent.NavigateToForgotPassword -> {
                 sendEffect(LoginEffect.NavigateToForgotPassword)
             }
+
             is LoginIntent.ClearError -> {
-                setState { copy(errorMessage = null) }
+                setState { copy() }
             }
         }
     }
+
+    fun onPhoneChange(isPushLoginButton: Boolean, phone: String) {
+        if (isPushLoginButton) {
+            validatePhone(phone.trim())
+        } else {
+            setState { copy(phone = phone.trim(), errorPhone = null) }
+
+        }
+    }
+
+    fun onPasswordChange(isPushLoginButton: Boolean, password: String) {
+
+        if (isPushLoginButton) {
+            validatePassword(password.trim())
+        } else {
+            setState { copy(password = password.trim(), errorPassword = null) }
+        }
+    }
+
+    fun validatePhone(phone: String) {
+
+        if (phone.isEmpty()) {
+            setState { copy(phone = phone, errorPhone = "Số điện thoại không được để trống") }
+
+        } else if (phone.length !in 10..11) {
+
+            setState {
+                copy(phone = phone, errorPhone = "Sai định dạng số điện thoại")
+
+            }
+        } else {
+            setState { copy(phone = phone, errorPhone = null) }
+
+        }
+    }
+
+    fun validatePassword(password: String) {
+        if (password.isEmpty()) {
+            setState {
+                copy(
+                    password = password,
+                    errorPassword = "Mật khẩu không được để trống"
+                )
+            }
+        } else if (password.length < 6) {
+            setState {
+                copy(
+                    password = password,
+                    errorPassword = "Mật khẩu phải có ít nhất 6 ký tự"
+                )
+            }
+        } else {
+            setState { copy(password = password , errorPassword = null) }
+        }
+    }
+
 }

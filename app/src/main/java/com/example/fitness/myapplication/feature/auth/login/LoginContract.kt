@@ -9,7 +9,6 @@ data class LoginState(
     val password: String = "",
     val isPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null,
     val isPushLoginButton: Boolean = true,
     val errorPhone: String? = null,
     val errorPassword: String? = null,
