@@ -4,7 +4,16 @@ import com.example.fitness.myapplication.core.base.UiEffect
 import com.example.fitness.myapplication.core.base.UiIntent
 import com.example.fitness.myapplication.core.base.UiState
 
+enum class HomeTab(val title: String) {
+    HOME("Trang chủ"),
+    CLASS("Lớp học"),
+    PRACTICE("Luyện tập"),
+    AI_TALK("AI Talk"),
+    PROFILE("Tài khoản")
+}
+
 data class HomeState(
+    val selectedTab: HomeTab = HomeTab.HOME,
     val profileName: String = "",
     val phone: String = "",
     val profileCount: Int = 0,
@@ -13,6 +22,7 @@ data class HomeState(
 ) : UiState
 
 sealed interface HomeIntent : UiIntent {
+    data class SelectTab(val tab: HomeTab) : HomeIntent
     object Refresh : HomeIntent
     object SignOut : HomeIntent
 }

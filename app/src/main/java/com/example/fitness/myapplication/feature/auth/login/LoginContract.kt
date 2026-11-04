@@ -8,10 +8,10 @@ data class LoginState(
     val phone: String = "",
     val password: String = "",
     val isPasswordVisible: Boolean = false,
-    val isLoading: Boolean = false,
-    val isPushLoginButton: Boolean = true,
+    val isPushLoginButton: Boolean = false,
     val errorPhone: String? = null,
     val errorPassword: String? = null,
+    val isLoading: Boolean = false
 ) : UiState {
 
 }

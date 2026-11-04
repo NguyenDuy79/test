@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.layout.ContentScale
@@ -48,9 +50,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.fitness.myapplication.R
 import com.example.fitness.myapplication.core.designsystem.component.EdupiaButton
 import com.example.fitness.myapplication.core.designsystem.component.EdupiaTextField
@@ -69,6 +72,7 @@ fun LoginScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+
     CollectEffect(viewModel.effect) { effect ->
         when (effect) {
             is LoginEffect.NavigateToHome -> onNavigateToHome()
@@ -78,6 +82,10 @@ fun LoginScreen(
                 Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    if (state.isLoading) {
+        LoadingDialog()
     }
 
     LoginContent(
@@ -93,6 +101,8 @@ fun LoginContent(
 ) {
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
+
+
 
     Scaffold(
         containerColor = EdupiaColors.BackgroundWhite,
@@ -237,7 +247,7 @@ fun LoginContent(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = true,
-                isLoading = state.isLoading
+
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -358,4 +368,62 @@ fun LoginScreenErrorPreview() {
 @Composable
 fun ShowLoginScreen() {
     LoginScreenPreview()
+}
+
+@Composable
+fun LoadingDialog(
+    message: String = "Đang xử lý...",
+    onDismissRequest: () -> Unit = {}
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .width(160.dp)
+                .height(160.dp)
+                .clip(EdupiaShapes.ShapeMedium)
+                .background(EdupiaColors.BackgroundWhite.copy(alpha = 0.5f))
+
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator(
+                    color = EdupiaColors.Primary,
+                    strokeWidth = 5.dp,
+                    modifier = Modifier.size(50.dp)
+                )
+
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Loading Dialog")
+@Composable
+fun LoadingDialogPreview() {
+    EdupiaTheme {
+        LoadingDialog(message = "Đang đăng nhập...")
+    }
+}
+
+@Preview(showBackground = true, name = "Login Screen - Loading")
+@Composable
+fun LoginScreenLoadingPreview() {
+    EdupiaTheme {
+        LoginContent(
+            state = LoginState(
+                phone = "0987654321",
+
+            )
+        ) { }
+    }
 }

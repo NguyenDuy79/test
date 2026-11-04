@@ -28,7 +28,7 @@ class HomeViewModel(
         viewModelScope.launch {
             authStore.state
                 .map { auth ->
-                    HomeState(
+                    currentState.copy(
                         profileName = auth.currentProfile.name.ifEmpty { auth.user.fullName },
                         phone = auth.user.phone,
                         profileCount = auth.user.profiles.size,
@@ -43,6 +43,8 @@ class HomeViewModel(
 
     override fun handleIntent(intent: HomeIntent) {
         when (intent) {
+            is HomeIntent.SelectTab -> setState { copy(selectedTab = intent.tab) }
+
             // Đang refresh thì bỏ qua các lần kéo-làm-mới tiếp theo.
             is HomeIntent.Refresh -> launchDroppable(intent) {
                 commonStore.withGlobalLoading {

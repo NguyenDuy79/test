@@ -37,10 +37,10 @@ class LoginViewModel(
     }
 
     private suspend fun submitLogin() {
+        setState { copy(isPushLoginButton = true) }
         validatePassword(currentState.password)
         validatePhone(currentState.phone)
         if (currentState.errorPhone != null || currentState.errorPassword != null) return
-
         setState { copy(isLoading = true) }
 
         val result = authRepository.login(currentState.phone, currentState.password)

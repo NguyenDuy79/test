@@ -52,15 +52,11 @@ class AuthStore(
             return
         }
 
-        loadUser()
-        // Load user lỗi (vd. token hết hạn) và không có hồ sơ ⇒ coi như chưa đăng nhập.
-        if (currentState.initLoadException != null && !currentState.hasProfile) {
-            setState { copy(status = AuthStatus.UNAUTHENTICATED, isInitLoadFinished = true) }
-            return
-        }
-        loadLicenses()
-
+        // Chỉ cần có accessToken là Auto-login thành công!
         setState { copy(status = AuthStatus.AUTHENTICATED, isInitLoadFinished = true) }
+
+        loadUser()
+        loadLicenses()
     }
 
     /** ≈ `AuthBloc.loadUser()`. */
